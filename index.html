@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>يومية الكافيتريا</title>
+<meta name="theme-color" content="#b4232a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="اليومية">
+<style>
+:root{
+  --bg:#f6f4f1; --card:#fff; --ink:#1d1b19; --muted:#6f6a64; --line:#e4dfd8;
+  --accent:#b4232a; --accent-ink:#fff; --in:#1f7a3f; --in-bg:#e7f4ec; --out:#b4232a; --out-bg:#fbeaea;
+  --radius:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#151413; --card:#211f1d; --ink:#f1ede8; --muted:#a39d96; --line:#36322e;
+    --accent:#e0474f; --accent-ink:#fff; --in:#5fcf8a; --in-bg:#17301f; --out:#f07a80; --out-bg:#3a1d1f;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,"Segoe UI",Tahoma,sans-serif;font-size:16px;
+  padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+header{position:sticky;top:0;z-index:5;background:var(--accent);color:var(--accent-ink);
+  padding:calc(10px + env(safe-area-inset-top)) 16px 10px}
+header h1{margin:0 0 8px;font-size:18px;font-weight:700}
+.datebar{display:flex;align-items:center;gap:8px}
+.datebar button{background:rgba(255,255,255,.18);color:inherit;border:0;border-radius:10px;min-width:40px;height:40px;font-size:20px}
+.datebar .day{flex:1;text-align:center;position:relative}
+.datebar .day b{display:block;font-size:17px}
+.datebar .day small{opacity:.85}
+.datebar input[type=date]{position:absolute;inset:0;opacity:0;width:100%}
+.today-btn{font-size:14px!important;padding:0 10px}
+main{padding:12px 16px;max-width:640px;margin:0 auto}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:10px 8px;text-align:center}
+.stat span{display:block;font-size:12px;color:var(--muted)}
+.stat b{font-size:17px}
+.stat.in b{color:var(--in)} .stat.out b{color:var(--out)}
+.stat.profit.pos{background:var(--in-bg)} .stat.profit.neg{background:var(--out-bg)}
+section.box{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
+.box h2{margin:0;padding:10px 14px;font-size:16px;display:flex;justify-content:space-between;border-bottom:1px solid var(--line)}
+.box.in h2{color:var(--in)} .box.out h2{color:var(--out)}
+.row{display:flex;gap:6px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--line)}
+.row input{border:0;background:transparent;color:var(--ink);font:inherit;padding:6px 4px;min-width:0}
+.row .n{flex:1}
+.row .a{width:110px;text-align:left;font-weight:600;direction:ltr}
+.row .del{border:0;background:none;color:var(--muted);font-size:20px;width:32px;height:32px}
+.add{display:flex;gap:6px;padding:10px}
+.add input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:10px;font:inherit}
+.add .a{flex:0 0 105px;direction:ltr;text-align:left}
+.add button{border:0;border-radius:10px;background:var(--accent);color:var(--accent-ink);font-size:22px;width:46px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 10px 10px}
+.chips button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:14px}
+.empty{padding:12px 14px;color:var(--muted);font-size:14px}
+.close-tbl{width:100%;border-collapse:collapse}
+.close-tbl td{padding:10px 14px;border-bottom:1px solid var(--line)}
+.close-tbl td:last-child{text-align:left;font-weight:600}
+.close-tbl tr.total td{font-size:18px;background:var(--bg)}
+.close-tbl input{width:120px;text-align:left;direction:ltr;font:inherit;font-weight:600;border:1px solid var(--line);border-radius:8px;padding:6px;background:var(--bg);color:var(--ink)}
+.hint{display:block;font-size:12px;color:var(--muted);font-weight:400}
+.link{border:0;background:none;color:var(--accent);font:inherit;font-size:13px;padding:0}
+textarea{width:100%;border:0;background:transparent;color:var(--ink);font:inherit;padding:10px 14px;min-height:60px;resize:vertical}
+nav{position:fixed;bottom:0;inset-inline:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav button{flex:1;border:0;background:none;color:var(--muted);font:inherit;font-size:13px;padding:8px 0 10px}
+nav button i{display:block;font-style:normal;font-size:22px}
+nav button.on{color:var(--accent);font-weight:700}
+.hist-item{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+.hist-item small{display:block;color:var(--muted);font-size:12px}
+.pos{color:var(--in)} .neg{color:var(--out)}
+.monthbar{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.monthbar input{flex:1;font:inherit;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+.btn{display:block;width:100%;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:700;padding:14px;margin:10px 0}
+.btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+p.note{color:var(--muted);font-size:14px;line-height:1.7}
+.hidden{display:none!important}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <h1>يومية الكافيتريا</h1>
+  <div class="datebar" id="datebar">
+    <button id="prevDay" aria-label="اليوم السابق">›</button>
+    <div class="day"><b id="dayName"></b><small id="dayDate"></small>
+      <input type="date" id="datePick" aria-label="اختيار التاريخ"></div>
+    <button id="nextDay" aria-label="اليوم التالي">‹</button>
+    <button id="goToday" class="today-btn">النهارده</button>
+  </div>
+</header>
+
+<main>
+  <!-- اليومية -->
+  <div id="view-day">
+    <div class="cards">
+      <div class="stat in"><span>الإيرادات</span><b id="sumIn">٠</b></div>
+      <div class="stat out"><span>المصروفات</span><b id="sumOut">٠</b></div>
+      <div class="stat profit" id="profitCard"><span>ربح اليوم</span><b id="profit">٠</b></div>
+    </div>
+
+    <section class="box in">
+      <h2>الإيرادات <span id="sumIn2"></span></h2>
+      <div id="listIn"></div>
+      <form class="add" data-kind="income">
+        <input class="n" placeholder="البيان (كاش، فيزا...)" list="namesIn" required>
+        <input class="a" placeholder="المبلغ" inputmode="decimal" required>
+        <button aria-label="إضافة">+</button>
+      </form>
+      <div class="chips" data-kind="income"></div>
+    </section>
+
+    <section class="box out">
+      <h2>المصروفات <span id="sumOut2"></span></h2>
+      <div id="listOut"></div>
+      <form class="add" data-kind="expense">
+        <input class="n" placeholder="البيان (أجور، خامات...)" list="namesOut" required>
+        <input class="a" placeholder="المبلغ" inputmode="decimal" required>
+        <button aria-label="إضافة">+</button>
+      </form>
+      <div class="chips" data-kind="expense"></div>
+    </section>
+
+    <section class="box">
+      <h2>تقفيل اليوم</h2>
+      <table class="close-tbl">
+        <tr><td>رصيد سابق<span class="hint" id="openHint"></span></td>
+            <td><input id="opening" inputmode="decimal"></td></tr>
+        <tr><td>+ إيرادات اليوم</td><td id="cIn"></td></tr>
+        <tr><td>= المجموع</td><td id="cSum"></td></tr>
+        <tr><td>− مصروفات اليوم</td><td id="cOut"></td></tr>
+        <tr class="total"><td>الباقي <span class="hint">بيترحّل لليوم اللي بعده</span></td><td id="cClose"></td></tr>
+      </table>
+    </section>
+
+    <section class="box">
+      <h2>ملاحظات</h2>
+      <textarea id="note" placeholder="أي ملاحظة عن اليوم..."></textarea>
+    </section>
+  </div>
+
+  <!-- السجل -->
+  <div id="view-history" class="hidden">
+    <div class="monthbar"><input type="month" id="monthPick" aria-label="الشهر"></div>
+    <div class="cards">
+      <div class="stat in"><span>إيرادات الشهر</span><b id="mIn">٠</b></div>
+      <div class="stat out"><span>مصروفات الشهر</span><b id="mOut">٠</b></div>
+      <div class="stat profit" id="mProfitCard"><span>ربح الشهر</span><b id="mProfit">٠</b></div>
+    </div>
+    <section class="box"><div id="histList"></div></section>
+  </div>
+
+  <!-- النسخ الاحتياطي -->
+  <div id="view-backup" class="hidden">
+    <section class="box" style="padding:4px 14px 10px">
+      <p class="note">كل البيانات متسجلة على الموبايل ده بس. لو الموبايل ضاع أو اتمسح المتصفح البيانات هتروح، فخدي نسخة احتياطية كل أسبوع وابعتيها لنفسك على واتساب أو الإيميل.</p>
+      <button class="btn" id="exportBtn">حفظ نسخة احتياطية</button>
+      <button class="btn ghost" id="importBtn">استرجاع من نسخة احتياطية</button>
+      <input type="file" id="importFile" accept=".json,application/json" class="hidden">
+      <p class="note" id="storageInfo"></p>
+    </section>
+  </div>
+</main>
+
+<nav>
+  <button data-view="day" class="on"><i>📒</i>اليومية</button>
+  <button data-view="history"><i>📅</i>السجل</button>
+  <button data-view="backup"><i>💾</i>نسخ احتياطي</button>
+</nav>
+
+<datalist id="namesIn"></datalist>
+<datalist id="namesOut"></datalist>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY = 'cafe-daily-v1';
+const QUICK = {
+  income: ['كاش', 'فيزا', 'دليفري', 'إنستاباي'],
+  expense: ['أجور', 'خامات', 'خضار', 'عيش', 'غاز', 'كهربا', 'مياه', 'نظافة']
+};
+const $ = id => document.getElementById(id);
+
+// ---------- storage ----------
+let db = load();
+function load(){
+  try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.days) return d; } catch(e){}
+  return { days:{} };
+}
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(db)); }
+  catch(e){ toast('مشكلة في الحفظ! خدي نسخة احتياطية'); }
+}
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+
+// ---------- helpers ----------
+const pad = n => String(n).padStart(2,'0');
+const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const fromIso = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const addDays = (s, n) => { const d = fromIso(s); d.setDate(d.getDate()+n); return iso(d); };
+const todayIso = () => iso(new Date());
+const fmt = n => (Math.round(n*100)/100).toLocaleString('ar-EG');
+function num(v){
+  if (typeof v === 'number') return v;
+  const s = String(v || '')
+    .replace(/[٠-٩]/g, c => c.charCodeAt(0) - 0x660)
+    .replace(/[۰-۹]/g, c => c.charCodeAt(0) - 0x6F0)
+    .replace(/[٫,]/g, '.').replace(/[^\d.\-]/g, '');
+  const n = parseFloat(s);
+  return isFinite(n) ? n : NaN;
+}
+const sum = arr => arr.reduce((t, x) => t + (x.amount || 0), 0);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1800); }
+
+function getDay(date, create){
+  if (!db.days[date] && create) db.days[date] = { opening:null, income:[], expense:[], note:'' };
+  return db.days[date] || { opening:null, income:[], expense:[], note:'' };
+}
+function hasData(d){ return d && (d.income.length || d.expense.length || d.opening != null || d.note); }
+function cleanup(date){ const d = db.days[date]; if (d && !hasData(d)) delete db.days[date]; }
+
+// رصيد سابق: لو مكتوب يدوي ناخده، غير كده ناخد "الباقي" من آخر يوم متسجل قبله
+function ledger(){
+  const out = {}; let prev = null;
+  Object.keys(db.days).filter(k => hasData(db.days[k])).sort().forEach(k => {
+    const d = db.days[k];
+    const open = d.opening != null ? d.opening : (prev ? out[prev].close : 0);
+    out[k] = { open, close: open + sum(d.income) - sum(d.expense), prev };
+    prev = k;
+  });
+  return out;
+}
+function opening(date){
+  const d = db.days[date];
+  if (d && d.opening != null) return { value:d.opening, auto:false };
+  const L = ledger();
+  const prev = Object.keys(L).filter(k => k < date).pop();
+  return { value: prev ? L[prev].close : 0, auto:true, from:prev };
+}
+function closing(date, L){
+  L = L || ledger();
+  if (L[date]) return L[date].close;
+  const d = getDay(date);
+  return opening(date).value + sum(d.income) - sum(d.expense);
+}
+
+// ---------- day view ----------
+let current = todayIso();
+const DAY_NAMES = ['الأحد','الاتنين','التلات','الأربع','الخميس','الجمعة','السبت'];
+
+function renderDay(){
+  const d = getDay(current);
+  const date = fromIso(current);
+  $('dayName').textContent = DAY_NAMES[date.getDay()] + (current === todayIso() ? ' (النهارده)' : '');
+  $('dayDate').textContent = date.toLocaleDateString('ar-EG', { day:'numeric', month:'long', year:'numeric' });
+  $('datePick').value = current;
+
+  renderList('listIn', 'income', d.income);
+  renderList('listOut', 'expense', d.expense);
+
+  const tin = sum(d.income), tout = sum(d.expense), p = tin - tout;
+  $('sumIn').textContent = $('sumIn2').textContent = $('cIn').textContent = fmt(tin);
+  $('sumOut').textContent = $('sumOut2').textContent = $('cOut').textContent = fmt(tout);
+  $('profit').textContent = fmt(p);
+  $('profitCard').className = 'stat profit ' + (p > 0 ? 'pos' : p < 0 ? 'neg' : '');
+
+  const o = opening(current);
+  if (document.activeElement !== $('opening')) $('opening').value = fmt(o.value);
+  $('openHint').innerHTML = o.auto
+    ? (o.from ? 'مترحّل تلقائي من ' + fromIso(o.from).toLocaleDateString('ar-EG', {day:'numeric', month:'short'}) : 'أول يوم')
+    : 'متعدّل يدوي — <button class="link" id="resetOpen">رجّعه تلقائي</button>';
+  if ($('resetOpen')) $('resetOpen').onclick = () => { getDay(current, true).opening = null; cleanup(current); save(); renderDay(); };
+  $('cSum').textContent = fmt(o.value + tin);
+  $('cClose').textContent = fmt(o.value + tin - tout);
+
+  if (document.activeElement !== $('note')) $('note').value = d.note || '';
+  renderSuggestions();
+}
+
+function renderList(elId, kind, items){
+  const el = $(elId);
+  if (!items.length){ el.innerHTML = '<div class="empty">لسه مفيش حاجة متسجلة</div>'; return; }
+  el.innerHTML = '';
+  items.forEach(it => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `<input class="n" aria-label="البيان"><input class="a" inputmode="decimal" aria-label="المبلغ"><button class="del" aria-label="حذف">×</button>`;
+    const [n, a, del] = row.children;
+    n.value = it.name; a.value = fmt(it.amount);
+    n.onchange = () => { it.name = n.value.trim() || it.name; save(); };
+    a.onfocus = () => { a.value = it.amount; a.select(); };
+    a.onchange = () => { const v = num(a.value); if (!isNaN(v)) { it.amount = v; save(); } renderDay(); };
+    a.onblur = () => { a.value = fmt(it.amount); };
+    del.onclick = () => {
+      if (!confirm(`حذف "${it.name}" — ${fmt(it.amount)}؟`)) return;
+      const list = getDay(current, true)[kind];
+      list.splice(list.indexOf(it), 1);
+      cleanup(current); save(); renderDay();
+    };
+    el.appendChild(row);
+  });
+}
+
+function renderSuggestions(){
+  for (const kind of ['income','expense']){
+    const names = new Set(QUICK[kind]);
+    Object.values(db.days).forEach(d => d[kind].forEach(x => names.add(x.name)));
+    $(kind === 'income' ? 'namesIn' : 'namesOut').innerHTML = [...names].map(n => `<option value="${n.replace(/"/g,'&quot;')}">`).join('');
+  }
+}
+
+document.querySelectorAll('form.add').forEach(form => {
+  const [n, a] = form.querySelectorAll('input');
+  form.onsubmit = e => {
+    e.preventDefault();
+    const amount = num(a.value);
+    if (isNaN(amount)) { toast('اكتبي المبلغ أرقام'); a.focus(); return; }
+    getDay(current, true)[form.dataset.kind].push({ id:uid(), name:n.value.trim(), amount });
+    save(); n.value = ''; a.value = ''; n.focus(); renderDay();
+  };
+});
+document.querySelectorAll('.chips').forEach(box => {
+  const form = box.previousElementSibling;
+  box.innerHTML = QUICK[box.dataset.kind].map(q => `<button type="button">${q}</button>`).join('');
+  box.onclick = e => {
+    if (e.target.tagName !== 'BUTTON') return;
+    form.querySelector('.n').value = e.target.textContent;
+    form.querySelector('.a').focus();
+  };
+});
+
+$('opening').onfocus = e => { e.target.value = opening(current).value; e.target.select(); };
+$('opening').onchange = e => {
+  const v = num(e.target.value);
+  if (isNaN(v)) return renderDay();
+  getDay(current, true).opening = v; save(); e.target.blur(); renderDay();
+};
+$('opening').onblur = () => renderDay();
+$('note').oninput = e => { getDay(current, true).note = e.target.value; cleanup(current); save(); };
+
+function goTo(date){ current = date; renderDay(); window.scrollTo(0,0); }
+$('prevDay').onclick = () => goTo(addDays(current, -1));
+$('nextDay').onclick = () => goTo(addDays(current, 1));
+$('goToday').onclick = () => goTo(todayIso());
+$('datePick').onchange = e => e.target.value && goTo(e.target.value);
+
+// لو التطبيق فضل مفتوح لحد ما اليوم اتغير، يفتح يومية جديدة تلقائي
+let lastToday = todayIso();
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  const t = todayIso();
+  if (t !== lastToday){ if (current === lastToday) current = t; lastToday = t; }
+  db = load(); render();
+});
+
+// ---------- history ----------
+function renderHistory(){
+  const m = $('monthPick').value || todayIso().slice(0,7);
+  $('monthPick').value = m;
+  const keys = Object.keys(db.days).filter(k => k.startsWith(m) && hasData(db.days[k])).sort().reverse();
+  let ti = 0, to = 0;
+  const L = ledger();
+  $('histList').innerHTML = keys.length ? '' : '<div class="empty">مفيش أيام متسجلة في الشهر ده</div>';
+  keys.forEach(k => {
+    const d = db.days[k], i = sum(d.income), o = sum(d.expense), p = i - o;
+    ti += i; to += o;
+    const date = fromIso(k);
+    const row = document.createElement('div');
+    row.className = 'hist-item';
+    row.innerHTML = `<div><b>${DAY_NAMES[date.getDay()]} ${date.toLocaleDateString('ar-EG',{day:'numeric',month:'short'})}</b>
+      <small>إيراد ${fmt(i)} &nbsp;|&nbsp; مصروف ${fmt(o)} &nbsp;|&nbsp; باقي ${fmt(closing(k, L))}</small></div>
+      <b class="${p >= 0 ? 'pos' : 'neg'}">${fmt(p)}</b>`;
+    row.onclick = () => { current = k; show('day'); };
+    $('histList').appendChild(row);
+  });
+  $('mIn').textContent = fmt(ti); $('mOut').textContent = fmt(to);
+  const mp = ti - to;
+  $('mProfit').textContent = fmt(mp);
+  $('mProfitCard').className = 'stat profit ' + (mp > 0 ? 'pos' : mp < 0 ? 'neg' : '');
+}
+$('monthPick').onchange = renderHistory;
+
+// ---------- backup ----------
+$('exportBtn').onclick = async () => {
+  const json = JSON.stringify(db, null, 1);
+  const name = `يومية-الكافيتريا-${todayIso()}.json`;
+  const file = new File([json], name, { type:'application/json' });
+  if (navigator.canShare && navigator.canShare({ files:[file] })) {
+    try { await navigator.share({ files:[file], title:name }); return; } catch(e){ if (e.name === 'AbortError') return; }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(file); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+};
+$('importBtn').onclick = () => $('importFile').click();
+$('importFile').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (!data || typeof data.days !== 'object') throw 0;
+    const n = Object.keys(data.days).length;
+    if (!confirm(`النسخة فيها ${fmt(n)} يوم. استرجاعها هيستبدل البيانات الحالية. متأكدة؟`)) return;
+    db = data; save(); toast('تم الاسترجاع'); render();
+  } catch(err){ toast('الملف ده مش نسخة احتياطية صحيحة'); }
+};
+function renderBackup(){
+  const n = Object.values(db.days).filter(hasData).length;
+  $('storageInfo').textContent = `متسجل حالياً: ${fmt(n)} يوم.`;
+}
+
+// ---------- navigation ----------
+let view = 'day';
+function show(v){
+  view = v;
+  for (const x of ['day','history','backup']) $('view-' + x).classList.toggle('hidden', x !== v);
+  $('datebar').classList.toggle('hidden', v !== 'day');
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.view === v));
+  render(); window.scrollTo(0,0);
+}
+function render(){ if (view === 'day') renderDay(); else if (view === 'history') renderHistory(); else renderBackup(); }
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => show(b.dataset.view));
+
+render();
+if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
