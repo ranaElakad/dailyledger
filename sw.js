@@ -1,5 +1,5 @@
 // يخلّي التطبيق يفتح من غير نت. غيّري رقم النسخة لما تعدّلي أي ملف.
-const CACHE = 'cafe-daily-v1';
+const CACHE = 'cafe-daily-v2';
 const FILES = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {

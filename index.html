@@ -78,6 +78,41 @@ nav button.on{color:var(--accent);font-weight:700}
 .btn{display:block;width:100%;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:700;padding:14px;margin:10px 0}
 .btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
 p.note{color:var(--muted);font-size:14px;line-height:1.7}
+.add{flex-wrap:wrap}
+.add select.p{flex:1 0 100%}
+select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px}
+.row .main{flex:1;min-width:0;display:flex;flex-direction:column}
+.row select.p{border:0;background:transparent;padding:0 4px;font-size:13px;color:var(--muted);max-width:100%}
+.row select.p.set{color:var(--accent);font-weight:600}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tabs button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:9px 0;font:inherit;font-size:14px}
+.tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:999px;background:var(--bg);border:1px solid var(--line);color:var(--muted);margin-inline-start:6px;font-weight:400}
+.cards.two{grid-template-columns:repeat(2,1fr)}
+.party-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.party-head h2{flex:1;margin:0;font-size:19px}
+.party-head button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit;font-size:14px}
+.bal{text-align:center;padding:14px}
+.bal b{display:block;font-size:24px}
+.bal small{color:var(--muted)}
+.stmt{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line)}
+.stmt .d{flex:1;min-width:0}
+.stmt .d small{display:block;color:var(--muted);font-size:12px}
+.stmt .v{text-align:left;font-weight:600;white-space:nowrap}
+.stmt .v small{display:block;color:var(--muted);font-weight:400;font-size:12px}
+.stmt.clickable{cursor:pointer}
+.mform{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px}
+.mform input,.mform select{width:100%;min-width:0;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:10px;font:inherit}
+.mform .full{grid-column:1/-1}
+.mform button{grid-column:1/-1;border:0;border-radius:10px;background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:700;padding:12px}
+dialog{border:0;border-radius:16px;background:var(--card);color:var(--ink);padding:0;width:min(420px,calc(100% - 32px))}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h3{margin:0;padding:14px 16px;border-bottom:1px solid var(--line)}
+dialog label{display:block;padding:8px 16px 0;font-size:14px;color:var(--muted)}
+dialog label input,dialog label select{display:block;width:100%;margin-top:4px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:10px;font:inherit}
+dialog .acts{display:flex;gap:8px;padding:16px}
+dialog .acts button{flex:1;border:0;border-radius:10px;padding:12px;font:inherit;font-weight:700;background:var(--accent);color:var(--accent-ink)}
+dialog .acts button.ghost{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
 .hidden{display:none!important}
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
 .toast.show{opacity:1}
@@ -111,6 +146,7 @@ p.note{color:var(--muted);font-size:14px;line-height:1.7}
         <input class="n" placeholder="البيان (كاش، فيزا...)" list="namesIn" required>
         <input class="a" placeholder="المبلغ" inputmode="decimal" required>
         <button aria-label="إضافة">+</button>
+        <select class="p" aria-label="العميل أو المورد"></select>
       </form>
       <div class="chips" data-kind="income"></div>
     </section>
@@ -122,6 +158,7 @@ p.note{color:var(--muted);font-size:14px;line-height:1.7}
         <input class="n" placeholder="البيان (أجور، خامات...)" list="namesOut" required>
         <input class="a" placeholder="المبلغ" inputmode="decimal" required>
         <button aria-label="إضافة">+</button>
+        <select class="p" aria-label="المورد أو العميل"></select>
       </form>
       <div class="chips" data-kind="expense"></div>
     </section>
@@ -155,6 +192,46 @@ p.note{color:var(--muted);font-size:14px;line-height:1.7}
     <section class="box"><div id="histList"></div></section>
   </div>
 
+  <!-- الموردين والعملاء -->
+  <div id="view-parties" class="hidden">
+    <div class="tabs" id="partyTabs">
+      <button data-f="all" class="on">الكل</button>
+      <button data-f="supplier">الموردين</button>
+      <button data-f="client">العملاء</button>
+    </div>
+    <div class="cards two">
+      <div class="stat in"><span>ليكي (مدين)</span><b id="pDebit">٠</b></div>
+      <div class="stat out"><span>عليكي (دائن)</span><b id="pCredit">٠</b></div>
+    </div>
+    <section class="box"><div id="partyList"></div></section>
+    <button class="btn" id="newParty">+ إضافة مورد / عميل</button>
+  </div>
+
+  <!-- كشف حساب مورد / عميل -->
+  <div id="view-party" class="hidden">
+    <div class="party-head">
+      <button id="partyBack">→ رجوع</button>
+      <h2 id="pName"></h2>
+      <button id="partyEdit">تعديل</button>
+    </div>
+    <section class="box bal"><small>الرصيد الحالي</small><b id="pBal"></b><small id="pBalHint"></small></section>
+    <section class="box">
+      <h2>حركة على الحساب من غير اليومية</h2>
+      <form class="mform" id="moveForm">
+        <select id="mSide" class="full">
+          <option value="credit">دائن — زوّد اللي عليكي ليه (فاتورة آجلة)</option>
+          <option value="debit">مدين — زوّد اللي ليكي عنده (أخد آجل)</option>
+        </select>
+        <input id="mAmount" placeholder="المبلغ" inputmode="decimal" required>
+        <input id="mDate" type="date" required>
+        <input id="mNote" class="full" placeholder="البيان (اختياري)">
+        <button>إضافة الحركة</button>
+      </form>
+    </section>
+    <section class="box"><h2>كشف الحساب</h2><div id="stmt"></div></section>
+    <button class="btn ghost" id="partyDelete">حذف الحساب</button>
+  </div>
+
   <!-- النسخ الاحتياطي -->
   <div id="view-backup" class="hidden">
     <section class="box" style="padding:4px 14px 10px">
@@ -170,12 +247,27 @@ p.note{color:var(--muted);font-size:14px;line-height:1.7}
 <nav>
   <button data-view="day" class="on"><i>📒</i>اليومية</button>
   <button data-view="history"><i>📅</i>السجل</button>
+  <button data-view="parties"><i>👥</i>الحسابات</button>
   <button data-view="backup"><i>💾</i>نسخ احتياطي</button>
 </nav>
 
 <datalist id="namesIn"></datalist>
 <datalist id="namesOut"></datalist>
 <div class="toast" id="toast"></div>
+
+<dialog id="partyDlg">
+  <form method="dialog" id="partyForm">
+    <h3 id="dlgTitle">مورد / عميل جديد</h3>
+    <label>الاسم<input id="fName" required></label>
+    <label>النوع<select id="fType"><option value="supplier">مورد</option><option value="client">عميل</option></select></label>
+    <label>الرصيد الافتتاحي<input id="fOpening" inputmode="decimal" placeholder="٠"></label>
+    <label>نوع الرصيد<select id="fNature">
+      <option value="credit">دائن — عليكي ليه</option>
+      <option value="debit">مدين — ليكي عنده</option>
+    </select></label>
+    <div class="acts"><button value="save">حفظ</button><button type="button" class="ghost" id="dlgCancel">إلغاء</button></div>
+  </form>
+</dialog>
 
 <script>
 const KEY = 'cafe-daily-v1';
@@ -188,9 +280,10 @@ const $ = id => document.getElementById(id);
 // ---------- storage ----------
 let db = load();
 function load(){
-  try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.days) return d; } catch(e){}
-  return { days:{} };
+  try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.days) return normalize(d); } catch(e){}
+  return normalize({ days:{} });
 }
+function normalize(d){ d.parties = d.parties || {}; return d; }
 function save(){
   try { localStorage.setItem(KEY, JSON.stringify(db)); }
   catch(e){ toast('مشكلة في الحفظ! خدي نسخة احتياطية'); }
@@ -249,6 +342,165 @@ function closing(date, L){
   return opening(date).value + sum(d.income) - sum(d.expense);
 }
 
+// ---------- الموردين والعملاء ----------
+// الرصيد بالإشارة: موجب = مدين (ليكي عنده)، سالب = دائن (عليكي ليه).
+// مصروف في اليومية لحساب = دفعتي له ⇐ مدين. إيراد من حساب = دفعلك ⇐ دائن.
+const TYPE_NAME = { supplier:'مورد', client:'عميل' };
+const partyList = () => Object.values(db.parties).sort((a,b) => a.name.localeCompare(b.name, 'ar'));
+
+function partyMoves(p){
+  const list = [];
+  for (const [date, d] of Object.entries(db.days)){
+    d.expense.forEach(x => x.partyId === p.id && list.push({ date, amount:x.amount, side:'debit', note:x.name, day:true }));
+    d.income.forEach(x => x.partyId === p.id && list.push({ date, amount:x.amount, side:'credit', note:x.name, day:true }));
+  }
+  (p.moves || []).forEach(m => list.push(Object.assign({ manual:true }, m)));
+  return list.sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+}
+const openSigned = p => p.nature === 'debit' ? p.opening : -p.opening;
+function partyBalance(p){
+  return partyMoves(p).reduce((b, m) => b + (m.side === 'debit' ? m.amount : -m.amount), openSigned(p));
+}
+const balText = b => b > 0 ? fmt(b) + ' مدين' : b < 0 ? fmt(-b) + ' دائن' : 'مسدّد';
+const balClass = b => b > 0 ? 'pos' : b < 0 ? 'neg' : '';
+
+function partyOptions(kind, selected){
+  const first = kind === 'income' ? 'client' : 'supplier';
+  const order = [first, first === 'client' ? 'supplier' : 'client'];
+  let html = `<option value="">— من غير ${kind === 'income' ? 'عميل' : 'مورد'} —</option>`;
+  for (const t of order){
+    const ps = partyList().filter(p => p.type === t);
+    if (ps.length) html += `<optgroup label="${t === 'client' ? 'العملاء' : 'الموردين'}">` +
+      ps.map(p => `<option value="${p.id}"${p.id === selected ? ' selected' : ''}>${esc(p.name)}</option>`).join('') + '</optgroup>';
+  }
+  return html + `<option value="__new">+ ${kind === 'income' ? 'عميل' : 'مورد'} جديد…</option>`;
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' })[c]);
+
+// select.p: لو اختارت "جديد" يفتح نافذة الإضافة، وبعد الحفظ يختاره
+function bindPartySelect(sel, kind, onPick){
+  sel.dataset.prev = sel.value;
+  sel.onchange = () => {
+    if (sel.value !== '__new'){ sel.dataset.prev = sel.value; onPick(sel.value); return; }
+    sel.value = sel.dataset.prev || '';
+    openPartyDialog(null, kind === 'income' ? 'client' : 'supplier', p => onPick(p.id));
+  };
+}
+
+let dlgDone = null;
+function openPartyDialog(p, defType, onSaved){
+  dlgDone = { p, onSaved };
+  $('dlgTitle').textContent = p ? 'تعديل ' + p.name : 'مورد / عميل جديد';
+  $('fName').value = p ? p.name : '';
+  $('fType').value = p ? p.type : (defType || 'supplier');
+  $('fOpening').value = p && p.opening ? p.opening : '';
+  $('fNature').value = p ? p.nature : ($('fType').value === 'client' ? 'debit' : 'credit');
+  $('partyDlg').showModal();
+  $('fName').focus();
+}
+$('fType').onchange = () => { $('fNature').value = $('fType').value === 'client' ? 'debit' : 'credit'; };
+$('dlgCancel').onclick = () => $('partyDlg').close();
+$('partyForm').onsubmit = e => {
+  const name = $('fName').value.trim();
+  const opening = $('fOpening').value.trim() ? num($('fOpening').value) : 0;
+  if (!name || isNaN(opening)) { e.preventDefault(); toast(!name ? 'اكتبي الاسم' : 'الرصيد لازم يكون أرقام'); return; }
+  const p = dlgDone.p || { id:uid(), moves:[] };
+  Object.assign(p, { name, type:$('fType').value, opening:Math.abs(opening), nature:$('fNature').value });
+  db.parties[p.id] = p;
+  save();
+  const cb = dlgDone.onSaved;
+  dlgDone = null;
+  if (cb) cb(p);
+  render();
+};
+
+let partyFilter = 'all', currentParty = null;
+document.querySelectorAll('#partyTabs button').forEach(b => b.onclick = () => {
+  partyFilter = b.dataset.f;
+  document.querySelectorAll('#partyTabs button').forEach(x => x.classList.toggle('on', x === b));
+  renderParties();
+});
+$('newParty').onclick = () => openPartyDialog(null, partyFilter === 'client' ? 'client' : 'supplier');
+
+function renderParties(){
+  let deb = 0, cred = 0;
+  const el = $('partyList');
+  el.innerHTML = '';
+  const ps = partyList();
+  ps.forEach(p => { const b = partyBalance(p); if (b > 0) deb += b; else cred -= b; });
+  const shown = ps.filter(p => partyFilter === 'all' || p.type === partyFilter);
+  if (!shown.length) el.innerHTML = '<div class="empty">لسه مفيش حسابات. دوسي "إضافة مورد / عميل"</div>';
+  shown.forEach(p => {
+    const b = partyBalance(p);
+    const row = document.createElement('div');
+    row.className = 'hist-item';
+    row.innerHTML = `<div><b>${esc(p.name)}</b><span class="tag">${TYPE_NAME[p.type]}</span></div><b class="${balClass(b)}">${balText(b)}</b>`;
+    row.onclick = () => {
+      currentParty = p.id;
+      $('mSide').value = p.type === 'client' ? 'debit' : 'credit';
+      $('mDate').value = current;
+      show('party');
+    };
+    el.appendChild(row);
+  });
+  $('pDebit').textContent = fmt(deb);
+  $('pCredit').textContent = fmt(cred);
+}
+
+function renderParty(){
+  const p = db.parties[currentParty];
+  if (!p) return show('parties');
+  $('pName').innerHTML = `${esc(p.name)}<span class="tag">${TYPE_NAME[p.type]}</span>`;
+  const b = partyBalance(p);
+  $('pBal').textContent = balText(b);
+  $('pBal').className = balClass(b);
+  $('pBalHint').textContent = b > 0 ? 'ليكي عنده' : b < 0 ? 'عليكي ليه' : '';
+  if (!$('mDate').value) $('mDate').value = current;
+
+  const el = $('stmt');
+  let run = openSigned(p);
+  const shortDate = s => fromIso(s).toLocaleDateString('ar-EG', { day:'numeric', month:'short', year:'numeric' });
+  let html = `<div class="stmt"><div class="d"><b>رصيد افتتاحي</b></div><div class="v">${balText(run)}</div></div>`;
+  const moves = partyMoves(p);
+  el.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.innerHTML = html;
+  moves.forEach(m => {
+    run += m.side === 'debit' ? m.amount : -m.amount;
+    const row = document.createElement('div');
+    row.className = 'stmt' + (m.day ? ' clickable' : '');
+    row.innerHTML = `<div class="d"><b>${esc(m.note || (m.side === 'debit' ? 'مدين' : 'دائن'))}</b>
+        <small>${shortDate(m.date)} — ${m.day ? (m.side === 'debit' ? 'مصروف في اليومية' : 'إيراد في اليومية') : 'حركة يدوية'}</small></div>
+      <div class="v ${m.side === 'debit' ? 'pos' : 'neg'}">${fmt(m.amount)} ${m.side === 'debit' ? 'مدين' : 'دائن'}<small>الرصيد: ${balText(run)}</small></div>
+      ${m.manual ? '<button class="del" aria-label="حذف">×</button>' : ''}`;
+    if (m.day) row.onclick = () => { current = m.date; show('day'); };
+    if (m.manual) row.querySelector('.del').onclick = () => {
+      if (!confirm(`حذف الحركة ${fmt(m.amount)}؟`)) return;
+      p.moves = p.moves.filter(x => x.id !== m.id); save(); renderParty();
+    };
+    wrap.appendChild(row);
+  });
+  if (!moves.length) wrap.insertAdjacentHTML('beforeend', '<div class="empty">مفيش حركات لسه</div>');
+  el.appendChild(wrap);
+}
+$('partyBack').onclick = () => show('parties');
+$('partyEdit').onclick = () => openPartyDialog(db.parties[currentParty]);
+$('partyDelete').onclick = () => {
+  const p = db.parties[currentParty];
+  if (!confirm(`حذف حساب "${p.name}"؟ البنود اللي في اليومية هتفضل بس من غير اسمه.`)) return;
+  Object.values(db.days).forEach(d => [...d.income, ...d.expense].forEach(x => { if (x.partyId === p.id) delete x.partyId; }));
+  delete db.parties[p.id]; save(); show('parties');
+};
+$('moveForm').onsubmit = e => {
+  e.preventDefault();
+  const amount = num($('mAmount').value);
+  if (isNaN(amount) || amount <= 0) { toast('اكتبي المبلغ أرقام'); return; }
+  const p = db.parties[currentParty];
+  p.moves = p.moves || [];
+  p.moves.push({ id:uid(), date:$('mDate').value || current, amount, side:$('mSide').value, note:$('mNote').value.trim() });
+  save(); $('mAmount').value = ''; $('mNote').value = ''; toast('اتضافت الحركة'); renderParty();
+};
+
 // ---------- day view ----------
 let current = todayIso();
 const DAY_NAMES = ['الأحد','الاتنين','التلات','الأربع','الخميس','الجمعة','السبت'];
@@ -262,6 +514,11 @@ function renderDay(){
 
   renderList('listIn', 'income', d.income);
   renderList('listOut', 'expense', d.expense);
+  document.querySelectorAll('form.add select.p').forEach(sel => {
+    const v = sel.value;
+    sel.innerHTML = partyOptions(sel.closest('form').dataset.kind, v);
+    sel.value = db.parties[v] ? v : '';
+  });
 
   const tin = sum(d.income), tout = sum(d.expense), p = tin - tout;
   $('sumIn').textContent = $('sumIn2').textContent = $('cIn').textContent = fmt(tin);
@@ -289,10 +546,17 @@ function renderList(elId, kind, items){
   items.forEach(it => {
     const row = document.createElement('div');
     row.className = 'row';
-    row.innerHTML = `<input class="n" aria-label="البيان"><input class="a" inputmode="decimal" aria-label="المبلغ"><button class="del" aria-label="حذف">×</button>`;
-    const [n, a, del] = row.children;
+    row.innerHTML = `<div class="main"><input class="n" aria-label="البيان"><select class="p" aria-label="المورد أو العميل"></select></div><input class="a" inputmode="decimal" aria-label="المبلغ"><button class="del" aria-label="حذف">×</button>`;
+    const [main, a, del] = row.children;
+    const [n, sel] = main.children;
     n.value = it.name; a.value = fmt(it.amount);
     n.onchange = () => { it.name = n.value.trim() || it.name; save(); };
+    sel.innerHTML = partyOptions(kind, it.partyId);
+    sel.classList.toggle('set', !!it.partyId);
+    bindPartySelect(sel, kind, id => {
+      if (id) it.partyId = id; else delete it.partyId;
+      save(); renderDay();
+    });
     a.onfocus = () => { a.value = it.amount; a.select(); };
     a.onchange = () => { const v = num(a.value); if (!isNaN(v)) { it.amount = v; save(); } renderDay(); };
     a.onblur = () => { a.value = fmt(it.amount); };
@@ -316,12 +580,20 @@ function renderSuggestions(){
 
 document.querySelectorAll('form.add').forEach(form => {
   const [n, a] = form.querySelectorAll('input');
+  const sel = form.querySelector('select.p');
+  bindPartySelect(sel, form.dataset.kind, id => {
+    renderDay(); sel.value = id; sel.dataset.prev = id;
+    // لو البيان فاضي نحط اسم الحساب
+    if (id && !n.value.trim()) n.value = db.parties[id].name;
+  });
   form.onsubmit = e => {
     e.preventDefault();
     const amount = num(a.value);
     if (isNaN(amount)) { toast('اكتبي المبلغ أرقام'); a.focus(); return; }
-    getDay(current, true)[form.dataset.kind].push({ id:uid(), name:n.value.trim(), amount });
-    save(); n.value = ''; a.value = ''; n.focus(); renderDay();
+    const item = { id:uid(), name:n.value.trim(), amount };
+    if (sel.value) item.partyId = sel.value;
+    getDay(current, true)[form.dataset.kind].push(item);
+    save(); n.value = ''; a.value = ''; sel.value = ''; sel.dataset.prev = ''; n.focus(); renderDay();
   };
 });
 document.querySelectorAll('.chips').forEach(box => {
@@ -406,7 +678,7 @@ $('importFile').onchange = async e => {
     if (!data || typeof data.days !== 'object') throw 0;
     const n = Object.keys(data.days).length;
     if (!confirm(`النسخة فيها ${fmt(n)} يوم. استرجاعها هيستبدل البيانات الحالية. متأكدة؟`)) return;
-    db = data; save(); toast('تم الاسترجاع'); render();
+    db = normalize(data); save(); toast('تم الاسترجاع'); render();
   } catch(err){ toast('الملف ده مش نسخة احتياطية صحيحة'); }
 };
 function renderBackup(){
@@ -418,12 +690,15 @@ function renderBackup(){
 let view = 'day';
 function show(v){
   view = v;
-  for (const x of ['day','history','backup']) $('view-' + x).classList.toggle('hidden', x !== v);
+  for (const x of ['day','history','parties','party','backup']) $('view-' + x).classList.toggle('hidden', x !== v);
   $('datebar').classList.toggle('hidden', v !== 'day');
-  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.view === v));
+  const tab = v === 'party' ? 'parties' : v;
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.view === tab));
   render(); window.scrollTo(0,0);
 }
-function render(){ if (view === 'day') renderDay(); else if (view === 'history') renderHistory(); else renderBackup(); }
+function render(){
+  ({ day:renderDay, history:renderHistory, parties:renderParties, party:renderParty, backup:renderBackup })[view]();
+}
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => show(b.dataset.view));
 
 render();
